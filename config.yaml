@@ -1,0 +1,11 @@
+---
+data_path: ../data
+purchases_path: ../data
+purchases_filename: purchases.csv
+async_chunk_size: 15
+count_epochs_to_write_on_disk: 1000
+output_format_str: async_info_{}.csv
+time_sleep: 0.1
+print: True
+chunk_num: 1
+chunk_size: 300000
