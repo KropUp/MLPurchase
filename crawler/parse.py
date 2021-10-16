@@ -107,7 +107,7 @@ async def main():
             if (epoch % count_epochs_to_write_on_disk) == 0:
                 print("DataFrame saved") if config["print"] else None
                 filename_to_save = config["output_format_str"].format(config["chunk_num"])
-                df.to_csv(os.path.join(config["data_path"], filename_to_save), index=False)
+                df.to_csv(filename_to_save, index=False)
             epoch += 1
             time.sleep(config["time_sleep"])
     print("All time is ", time.time() - start_time)
