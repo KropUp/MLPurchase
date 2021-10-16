@@ -12,7 +12,7 @@ if len(sys.argv) < 2:
     print("No config argument")
     exit()
 
-with open('../config.yaml') as f:
+with open('config.yaml') as f:
     global config
     config = yaml.load(f, Loader=yaml.FullLoader)
 
