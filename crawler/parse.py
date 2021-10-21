@@ -96,20 +96,27 @@ async def main():
         count_epochs_to_write_on_disk = config["count_epochs_to_write_on_disk"]
         print("Count batches is", count_epochs)
         for epoch in tqdm(range(count_epochs)):
-            print("Epoch №", epoch) if config["print"] else None
-            tasks = []
-            chunk = purch_list[chunk_size * epoch : chunk_size * (epoch + 1)]
-            for purch in chunk:
-                tasks.append(parse_logic(session, purch))
-            res = await asyncio.gather(*tasks)
-            print(res) if config["print"] else None
-            df = df.append(res)
-            if (epoch % count_epochs_to_write_on_disk) == 0:
-                print("DataFrame saved") if config["print"] else None
-                filename_to_save = config["output_format_str"].format(config["chunk_num"])
-                df.to_csv(filename_to_save, index=False)
-            epoch += 1
-            time.sleep(config["time_sleep"])
+            try:
+                print("Epoch №", epoch) if config["print"] else None
+                tasks = []
+                chunk = purch_list[chunk_size * epoch : chunk_size * (epoch + 1)]
+                for purch in chunk:
+                    tasks.append(parse_logic(session, purch))
+                res = await asyncio.gather(*tasks)
+                print(res) if config["print"] else None
+                df = df.append(res)
+                if (epoch % count_epochs_to_write_on_disk) == 0:
+                    print("DataFrame saved") if config["print"] else None
+                    filename_to_save = config["output_format_str"].format(config["chunk_num"])
+                    df.to_csv(filename_to_save, index=False)
+                epoch += 1
+                time.sleep(config["time_sleep"])
+            except:
+                print(time.time(), "Sleeping")
+                time.sleep(60)
+                print(time.time(), "Continue")
+                continue
     print("All time is ", time.time() - start_time)
+
 
 asyncio.run(main())
