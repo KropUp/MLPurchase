@@ -133,3 +133,7 @@ dmypy.json
 
 data/
 logs/
+db/
+dbconfig.py
+alembic/
+alembic.ini
