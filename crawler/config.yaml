@@ -9,3 +9,4 @@ time_sleep: 0.1
 print: True
 chunk_num: 1
 chunk_size: 10000
+purchase_table_name: public.purchases

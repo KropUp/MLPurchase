@@ -73,9 +73,9 @@ async def main():
     conn = psycopg2.connect(conn_string, sslmode=creds.SSLMODE)
     print("Database connected!")
     query = '''
-            INSERT INTO purchases ("regNumber", "name", "max_price", "currency", "update_dt", "code")
+            INSERT INTO {} ("regNumber", "name", "max_price", "currency", "update_dt", "code")
             VALUES (%(regNumber)s, %(name)s, %(max_price)s, %(currency)s, %(update_dt)s, %(code)s);
-            '''
+            '''.format(config["purchase_table_name"])
     chunk_size = config["async_chunk_size"]
     async with aiohttp.ClientSession() as session:
         count_epochs = len(purch_list) // chunk_size + ((len(purch_list) // chunk_size) > 0)
