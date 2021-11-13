@@ -8,4 +8,4 @@ output_format_str: async_info_{}.csv
 time_sleep: 0.1
 print: True
 chunk_num: 1
-chunk_size: 300
+chunk_size: 10000

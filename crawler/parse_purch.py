@@ -49,14 +49,19 @@ async def parse_logic(session, purch):
             try:
                 start_price = int(''.join(start_price[0].text.strip().split(',')[0].split()))
             except:
-                start_price = None
+                start_price = -1
+        else:
+            start_price = -1
         currency = "RUB"
         el = soup.find_all("div", {'class': "cardMainInfo__section col-6"})
         if len(el) > 0:
-            update_dt = el[1].find("span", {"class": "cardMainInfo__content"}).text.strip()
-            update_dt = datetime.strptime(update_dt, '%d.%M.%Y')
+            try:
+                update_dt = el[1].find("span", {"class": "cardMainInfo__content"}).text.strip()
+                update_dt = datetime.strptime(update_dt, '%d.%M.%Y')
+            except:
+                update_dt = datetime.now()
         else:
-            update_dt = None
+            update_dt = datetime.now()
         #winer_list = soup.find_all('table', {'class': 'blockInfo__table tableBlock'})
         return {"regNumber": purch, "name": purchase_name, "max_price": start_price, "currency": currency, \
             "update_dt": update_dt, "code": ""}
@@ -76,25 +81,25 @@ async def main():
         count_epochs = len(purch_list) // chunk_size + ((len(purch_list) // chunk_size) > 0)
         print("Count batches is", count_epochs)
         for epoch in tqdm(range(count_epochs)):
-            try:
-                print("Epoch №", epoch) if config["print"] else None
-                cur = conn.cursor()
-                tasks = []
-                chunk = purch_list[chunk_size * epoch : chunk_size * (epoch + 1)]
-                for purch in chunk:
-                    tasks.append(parse_logic(session, purch))
-                res = await asyncio.gather(*tasks)
-                for item in res:
-                    cur.execute(query, item)
-                conn.commit()
-                cur.close()
-                print(res) if config["print"] else None
-                time.sleep(config["time_sleep"])
-            except:
-                print(time.time(), "Sleeping")
-                time.sleep(60)
-                print(time.time(), "Continue")
-                continue
+            # try:
+            print("Epoch №", epoch) if config["print"] else None
+            cur = conn.cursor()
+            tasks = []
+            chunk = purch_list[chunk_size * epoch : chunk_size * (epoch + 1)]
+            for purch in chunk:
+                tasks.append(parse_logic(session, purch))
+            res = await asyncio.gather(*tasks)
+            print(res) if config["print"] else None
+            for item in res:
+                cur.execute(query, item)
+            conn.commit()
+            cur.close()
+            time.sleep(config["time_sleep"])
+            # except:
+            #     print(time.time(), "Sleeping")
+            #     time.sleep(5)
+            #     print(time.time(), "Continue")
+            #     continue
     conn.close()
 
     print("All time is ", time.time() - start_time)
