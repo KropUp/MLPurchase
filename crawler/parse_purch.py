@@ -81,25 +81,27 @@ async def main():
         count_epochs = len(purch_list) // chunk_size + ((len(purch_list) // chunk_size) > 0)
         print("Count batches is", count_epochs)
         for epoch in tqdm(range(count_epochs)):
-            # try:
-            print("Epoch №", epoch) if config["print"] else None
-            cur = conn.cursor()
-            tasks = []
-            chunk = purch_list[chunk_size * epoch : chunk_size * (epoch + 1)]
-            for purch in chunk:
-                tasks.append(parse_logic(session, purch))
-            res = await asyncio.gather(*tasks)
-            print(res) if config["print"] else None
-            for item in res:
-                cur.execute(query, item)
-            conn.commit()
-            cur.close()
-            time.sleep(config["time_sleep"])
-            # except:
-            #     print(time.time(), "Sleeping")
-            #     time.sleep(5)
-            #     print(time.time(), "Continue")
-            #     continue
+            try:
+                print("Epoch №", epoch) if config["print"] else None
+                cur = conn.cursor()
+                tasks = []
+                chunk = purch_list[chunk_size * epoch : chunk_size * (epoch + 1)]
+                for purch in chunk:
+                    tasks.append(parse_logic(session, purch))
+                res = await asyncio.gather(*tasks)
+                print(res) if config["print"] else None
+                for item in res:
+                    cur.execute(query, item)
+                conn.commit()
+                cur.close()
+                time.sleep(config["time_sleep"])
+            except:
+                conn.rollback()
+                cur.close()
+                print(time.time(), "Sleeping")
+                time.sleep(5)
+                print(time.time(), "Continue")
+                continue
     conn.close()
 
     print("All time is ", time.time() - start_time)
