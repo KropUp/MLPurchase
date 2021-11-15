@@ -16,9 +16,9 @@ import pickle
 if len(sys.argv) < 2:
     print("No config argument")
     exit()
-print(sys.argv[1])
+print("Find config file -", sys.argv[1])
 
-with open('config.yaml') as f:
+with open(sys.argv[1]) as f:
     global config
     config = yaml.load(f, Loader=yaml.FullLoader)
 
