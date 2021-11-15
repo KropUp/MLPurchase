@@ -16,6 +16,7 @@ import pickle
 if len(sys.argv) < 2:
     print("No config argument")
     exit()
+print(sys.argv[1])
 
 with open('config.yaml') as f:
     global config
