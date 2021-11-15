@@ -174,6 +174,7 @@ async def main():
                     if "inn" in item:
                         if item["inn"] not in unique_inns:
                             cur.execute(company_query, item)
+                            unique_inns.add(item["inn"])
                             attribute_dict = {"company_inn": item["inn"], "attribute_type": "phone", "attribute_value": item["phone"]}
                             cur.execute(company_attribute_query, attribute_dict)
                             attribute_dict = {"company_inn": item["inn"], "attribute_type": "address", "attribute_value": item["address"]}
@@ -181,7 +182,7 @@ async def main():
                             attribute_dict = {"company_inn": item["inn"], "attribute_type": "email", "attribute_value": item["email"]}
                             cur.execute(company_attribute_query, attribute_dict)
                         cur.execute(contract_query, item)
-                    print(item)
+                    print(item) if config["print"] else None
                 conn.commit()
                 cur.close()
                 time.sleep(config["time_sleep"])
@@ -190,10 +191,14 @@ async def main():
                 cur.close()
                 print(time.time(), "Sleeping")
                 time.sleep(5)
+                print(time.time(), "Saving unique inns")
+                with open(config["unique_inns_filename"], 'wb') as handle:
+                    pickle.dump(unique_inns, handle, protocol=pickle.HIGHEST_PROTOCOL)
                 print(time.time(), "Continue")
                 continue
     conn.close()
-
+    with open(config["unique_inns_filename"], 'wb') as handle:
+        pickle.dump(unique_inns, handle, protocol=pickle.HIGHEST_PROTOCOL)
     print("All time is ", time.time() - start_time)
 
 
