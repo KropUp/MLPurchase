@@ -139,3 +139,4 @@ alembic/
 alembic.ini
 
 unique_inns.pickle
+config.yaml
