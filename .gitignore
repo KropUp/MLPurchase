@@ -137,3 +137,5 @@ db/
 dbconfig.py
 alembic/
 alembic.ini
+
+unique_inns.pickle

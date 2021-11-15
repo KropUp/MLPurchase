@@ -9,4 +9,8 @@ time_sleep: 0.1
 print: True
 chunk_num: 1
 chunk_size: 10000
-purchase_table_name: public.purchases
+purchases_table_name: public.purchases
+contracts_table_name: public.contracts
+companies_table_name: public.companies
+company_attributes_table_name: public.company_attributes
+unique_inns_filename: unique_inns.pickle
