@@ -12,6 +12,7 @@ import psycopg2
 import psycopg2.extras
 import dbconfig as creds
 import pickle
+from psycopg2.extras import execute_batch
 
 if len(sys.argv) < 2:
     print("No config argument")
@@ -160,36 +161,59 @@ async def main():
     async with aiohttp.ClientSession() as session:
         count_epochs = len(purch_list) // chunk_size + ((len(purch_list) // chunk_size) > 0)
         print("Count batches is", count_epochs)
+        purchases = []
+        companies = []
+        contracts = []
+        attributes = []
         for epoch in tqdm(range(count_epochs)):
             try:
                 print("Epoch №", epoch) if config["print"] else None
-                cur = conn.cursor()
+                # cur = conn.cursor()
                 tasks = []
                 chunk = purch_list[chunk_size * epoch : chunk_size * (epoch + 1)]
                 for purch in chunk:
                     tasks.append(parse_logic(session, purch))
                 res = await asyncio.gather(*tasks)
-                # print(res) if config["print"] else None
+                print(res) if config["print"] else None
                 for item in res:
-                    cur.execute(purchase_query, item)
+                    # cur.execute(purchase_query, item)
+                    purchases.append(item)
                     if "inn" in item:
                         if item["inn"] not in unique_inns:
-                            cur.execute(company_query, item)
+                            companies.append(item)
+                            # cur.execute(company_query, item)
                             unique_inns.add(item["inn"])
                             attribute_dict = {"company_inn": item["inn"], "attribute_type": "phone", "attribute_value": item["phone"]}
-                            cur.execute(company_attribute_query, attribute_dict)
+                            attributes.append(attribute_dict)
+                            # cur.execute(company_attribute_query, attribute_dict)
                             attribute_dict = {"company_inn": item["inn"], "attribute_type": "address", "attribute_value": item["address"]}
-                            cur.execute(company_attribute_query, attribute_dict)
+                            attributes.append(attribute_dict)
+                            # cur.execute(company_attribute_query, attribute_dict)
                             attribute_dict = {"company_inn": item["inn"], "attribute_type": "email", "attribute_value": item["email"]}
-                            cur.execute(company_attribute_query, attribute_dict)
-                        cur.execute(contract_query, item)
-                    print(item) if config["print"] else None
-                conn.commit()
-                cur.close()
+                            attributes.append(attribute_dict)
+                            # cur.execute(company_attribute_query, attribute_dict)
+                        # cur.execute(contract_query, item)
+                        contracts.append(item)
+                if (epoch % config["count_epochs_to_write_on_disk"]) == 0:
+                    cur = conn.cursor()
+                    execute_batch(cur, purchase_query, purchases)
+                    execute_batch(cur, company_query, companies)
+                    execute_batch(cur, company_attribute_query, attributes)
+                    execute_batch(cur, contract_query, contracts)
+                    purchases = []
+                    companies = []
+                    contracts = []
+                    attributes = []
+                    conn.commit()
+                    cur.close()
                 time.sleep(config["time_sleep"])
             except:
                 conn.rollback()
                 cur.close()
+                purchases = []
+                companies = []
+                contracts = []
+                attributes = []
                 print(time.time(), "Sleeping")
                 time.sleep(5)
                 print(time.time(), "Saving unique inns")

@@ -1,0 +1,19 @@
+services:
+  crawler:
+    image: purchases
+    ports:
+      - "8888:8888"
+    volumes:
+      - /Users/lev/MLPurchase:/purchase
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 2332
+  pgadmin:
+    image: "dpage/pgadmin4"
+    ports: 
+      - "80:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: levshigaev870@mail.ru
+      PGADMIN_DEFAULT_PASSWORD: 2332
